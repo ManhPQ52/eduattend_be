@@ -20,11 +20,20 @@ export async function initDb(): Promise<void> {
     timezone: "+00:00",
   });
 
-  const connection = await pool.getConnection();
   try {
-    await connection.ping();
-  } finally {
-    connection.release();
+    const connection = await pool.getConnection();
+    try {
+      await connection.ping();
+    } finally {
+      connection.release();
+    }
+  } catch (err) {
+    pool = null;
+    const { host, port, database } = config.db;
+    const message =
+      `Cannot connect to MySQL at ${host}:${port}/${database}. ` +
+      "Check DB env vars (Railway: link MySQL service and set MYSQLHOST/MYSQLPORT/... or MYSQL_URL).";
+    throw new Error(message, { cause: err });
   }
 }
 

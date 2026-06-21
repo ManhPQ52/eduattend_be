@@ -2,11 +2,17 @@ import { createApp } from "./app.js";
 import { config } from "./config/env.js";
 import { closeDb } from "./db/index.js";
 
-const app = await createApp();
+let server: ReturnType<typeof import("http").createServer>;
 
-const server = app.listen(config.port, () => {
-  console.log(`EduAttend API running on http://localhost:${config.port}`);
-});
+try {
+  const app = await createApp();
+  server = app.listen(config.port, () => {
+    console.log(`EduAttend API running on http://localhost:${config.port}`);
+  });
+} catch (err) {
+  console.error(err instanceof Error ? err.message : err);
+  process.exit(1);
+}
 
 async function shutdown() {
   server.close(async () => {
